@@ -2,7 +2,7 @@ var express = require('express');
 var fs = require('fs');
 var index_content = fs.readFileSync('index.html');
 var index_buffer = new Buffer(256);
-index_buffer.wirte(index_content, "utf-8");
+index_buffer.write(index_content, "utf-8");
 
 var app = express.createServer(express.logger());
 
