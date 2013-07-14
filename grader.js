@@ -53,74 +53,58 @@ var checkHtmlFile = function(htmlfile, checksfile) {
     var checks = loadChecks(checksfile).sort();
     var out = {};
     
-    for(var ii in checks) {
+    for (var ii in checks) {
         var present = $(checks[ii]).length > 0;
         out[checks[ii]] = present;
     }
     return out;
 };
-
-var getUrlContents = function(htmlurl) {
-    var str;
-    request(htmlurl).pipe(str);
-/*
-    rest.get(htmlurl).on('complete', function(result) {
-        if (result instanceof Error) {
-            console.log('Error: ' + result.message);
-            str = new Buffer('');
-        } else {
-            str = new Buffer(result);
-        }
-    });
-*/
-console.log(str);
-
-    return str;
-};
-    
-
 
 var checkHtmlUrl = function(htmlurl, checksfile) {
-    //console.log(rest.get(htmlurl));
-    
-    $ = cheerio.load(getUrlContents(htmlurl));
-    var checks = loadChecks(checksfile).sort();
-    var out = {};
-    
-    for(var ii in checks) {
-        var present = $(checks[ii]).length > 0;
-        out[checks[ii]] = present;
-    }
-
-    console.log(out);
-    return out;
+    rest.get(htmlurl).on('complete', function(result) {
+        //console.log(result);
+        $ = cheerio.load(result);
+        var checks = loadChecks(checksfile).sort();
+        var out = {};
+        
+        for (var ii in checks) {
+            var present = $(checks[ii]).length > 0;
+            out[checks[ii]] = present;
+        }
+        var outJson = JSON.stringify(out, null, 4);
+        console.log(outJson);
+        
+        process.exit(0);
+    });
 };
 
-if(require.main == module) {
+if (require.main == module) {
     program
         .option('-c, --checks <checks>', 'Path to checks.json', assertFileExists, CHECKSFILE_DEFAULT)
         .option('-f, --file <file>', 'Path to index.html')
         .option('-u, --url <url>', 'Url of html file')
         .parse(process.argv);
 
-    console.log("file : " + program.file);
-    console.log("url : " + program.url);
+    //console.log("file : " + program.file);
+    //console.log("url : " + program.url);
 
     var checkJson;
     if (program.file) {
         checkJson = checkHtmlFile(program.file, program.checks);
+        var outJson = JSON.stringify(checkJson, null, 4);
+        console.log(outJson);
     }
     else if (program.url) {
-        checkJson = checkHtmlUrl(program.url, program.checks);
+        //checkJson = checkHtmlUrl(program.url, program.checks);
+        checkHtmlUrl(program.url, program.checks);
     }
     else {
         console.log("--file or --url needed.");
         process.exit(1);
     }
 
-    var outJson = JSON.stringify(checkJson, null, 4);
-    console.log(outJson);
 } else {
     exports.checkHtmlFile = checkHtmlFile;
 }
+
 
